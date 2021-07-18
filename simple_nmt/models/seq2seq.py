@@ -153,7 +153,7 @@ class Seq2Seq(nn.Module):
         n_layers=4,
         dropout_p=.2
     ):
-        self.input_size = input_size
+        self.input_size = input_size # 
         self.word_vec_size = word_vec_size
         self.hidden_size = hidden_size
         self.output_size = output_size
@@ -162,8 +162,8 @@ class Seq2Seq(nn.Module):
 
         super(Seq2Seq, self).__init__()
 
-        self.emb_src = nn.Embedding(input_size, word_vec_size)
-        self.emb_dec = nn.Embedding(output_size, word_vec_size)
+        self.emb_src = nn.Embedding(input_size, word_vec_size) # source embedding
+        self.emb_dec = nn.Embedding(output_size, word_vec_size) # target embedding
 
         self.encoder = Encoder(
             word_vec_size, hidden_size,
@@ -241,6 +241,9 @@ class Seq2Seq(nn.Module):
         return h_0_tgt, c_0_tgt
 
     def forward(self, src, tgt):
+        # src: source sentence, shape: (bs, n) ~ (bs, n, |V_src|)
+        # tgt: target sentence, shape: (bs, m) ~ (bs, m, |V_tgt|)
+        # output: (bs, m, |V_tgt|)
         batch_size = tgt.size(0)
 
         mask = None
