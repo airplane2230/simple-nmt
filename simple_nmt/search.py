@@ -39,11 +39,14 @@ class SingleBeamSearchBoard():
         self.prev_status = {}
         self.batch_dims = {}
         for prev_status_name, each_config in prev_status_config.items():
-            init_status = each_config['init_status']
-            batch_dim_index = each_config['batch_dim_index']
+            # init_status
+            # |hidden_state| = (n_layers, 1, hs)
+            init_status = each_config['init_status'] 
+            batch_dim_index = each_config['batch_dim_index'] # 1
             if init_status is not None:
                 self.prev_status[prev_status_name] = torch.cat([init_status] * beam_size,
                                                                dim=batch_dim_index)
+                # |prev_status[prev_status_name]| = (n_layers, beam_size, hs)
             else:
                 self.prev_status[prev_status_name] = None
             self.batch_dims[prev_status_name] = batch_dim_index
@@ -143,7 +146,7 @@ class SingleBeamSearchBoard():
         # Unlike seq2seq, transformer has to memorize every previous output for attention operation.
         for prev_status_name, prev_status in prev_status.items():
             self.prev_status[prev_status_name] = torch.index_select(
-                prev_status,
+                prev_status, # |prev_status| = (n_layers, beam_size, hidden_size)
                 dim=self.batch_dims[prev_status_name],
                 index=self.beam_indice[-1]
             ).contiguous()

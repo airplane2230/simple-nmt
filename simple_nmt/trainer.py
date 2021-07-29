@@ -39,19 +39,23 @@ class MaximumLikelihoodEstimationEngine(Engine):
         # You have to reset the gradients of all model parameters
         # before to take another step in gradient descent.
         engine.model.train()
+        # Gradient Accumulation part
+        # iteration_per_update
         if engine.state.iteration % engine.config.iteration_per_update == 1 or \
             engine.config.iteration_per_update == 1:
             if engine.state.iteration > 1:
                 engine.optimizer.zero_grad()
 
         device = next(engine.model.parameters()).device
+        # X, y
         mini_batch.src = (mini_batch.src[0].to(device), mini_batch.src[1])
         mini_batch.tgt = (mini_batch.tgt[0].to(device), mini_batch.tgt[1])
-
+        # mini_batch.tgt[0].to(device): { <BOS>, y1, y2, ..., <EOS> }
+        
         # Raw target variable has both BOS and EOS token. 
         # The output of sequence-to-sequence does not have BOS token. 
         # Thus, remove BOS token for reference.
-        x, y = mini_batch.src, mini_batch.tgt[0][:, 1:]
+        x, y = mini_batch.src, mini_batch.tgt[0][:, 1:] # except <BOS>
         # |x| = (batch_size, length)
         # |y| = (batch_size, length)
 
@@ -59,7 +63,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
             # Take feed-forward
             # Similar as before, the input of decoder does not have EOS token.
             # Thus, remove EOS token for decoder input.
-            y_hat = engine.model(x, mini_batch.tgt[0][:, :-1])
+            y_hat = engine.model(x, mini_batch.tgt[0][:, :-1]) # except <EOS>
             # |y_hat| = (batch_size, length, output_size)
 
             loss = engine.crit(
@@ -76,7 +80,7 @@ class MaximumLikelihoodEstimationEngine(Engine):
         word_count = int(mini_batch.tgt[1].sum())
         p_norm = float(get_parameter_norm(engine.model.parameters()))
         g_norm = float(get_grad_norm(engine.model.parameters()))
-
+         
         if engine.state.iteration % engine.config.iteration_per_update == 0 and \
             engine.state.iteration > 0:
             # In orther to avoid gradient exploding, we apply gradient clipping.

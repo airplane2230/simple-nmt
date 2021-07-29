@@ -325,6 +325,8 @@ class Seq2Seq(nn.Module):
         # Same procedure as teacher forcing.
         emb_src = self.emb_src(x)
         h_src, h_0_tgt = self.encoder((emb_src, x_length))
+        # fast_merge_encoder_hiddens       
+        # bidirection encoder와 unidirection decoder의 hidden size를 맞춰주기 위한 함수
         decoder_hidden = self.fast_merge_encoder_hiddens(h_0_tgt)
 
         # Fill a vector, which has 'batch_size' dimension, with BOS value.
@@ -397,16 +399,17 @@ class Seq2Seq(nn.Module):
         h_src, h_0_tgt = self.encoder((emb_src, x_length))
         # |h_src| = (batch_size, length, hidden_size)
         h_0_tgt = self.fast_merge_encoder_hiddens(h_0_tgt)
+        # |h_0_tgt| = (number_of_layers, bs, hidden_size)
 
         # initialize 'SingleBeamSearchBoard' as many as batch_size
         boards = [SingleBeamSearchBoard(
             h_src.device,
             {
-                'hidden_state': {
+                'hidden_state': { 
                     'init_status': h_0_tgt[0][:, i, :].unsqueeze(1),
                     'batch_dim_index': 1,
                 }, # |hidden_state| = (n_layers, batch_size, hidden_size)
-                'cell_state': {
+                'cell_state': {  
                     'init_status': h_0_tgt[1][:, i, :].unsqueeze(1),
                     'batch_dim_index': 1,
                 }, # |cell_state| = (n_layers, batch_size, hidden_size)

@@ -288,7 +288,7 @@ def get_scheduler(optimizer, config):
 
 def main(config, model_weight=None, opt_weight=None):
     def print_config(config):
-        pp = pprint.PrettyPrinter(indent=4)
+        pp = pprint.PrettyPrinter(indent=4) 
         pp.pprint(vars(config))
     print_config(config)
 

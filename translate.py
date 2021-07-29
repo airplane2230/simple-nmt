@@ -216,7 +216,7 @@ if __name__ == '__main__':
             sorted_lines    = [sorted_tuples[i][0] for i in range(len(sorted_tuples))]
             lengths         = [sorted_tuples[i][1] for i in range(len(sorted_tuples))]
             original_indice = [sorted_tuples[i][2] for i in range(len(sorted_tuples))]
-
+ 
             # Converts string to list of index.
             x = loader.src.numericalize(
                 loader.src.pad(sorted_lines),
